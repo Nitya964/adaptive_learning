@@ -1,0 +1,303 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Quiz Result - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' module.course.id %}">{{
+                        module.course.title }}</a></li>
+                <li class="breadcrumb-item active">Result</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Score Card -->
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                <h3 class="mb-3">Quiz Completed!</h3>
+                <div class="result-score mb-3">{{ score }}%</div>
+                <p class="text-muted mb-4">
+                    You got <strong>{{ correct_count }} out of {{ total_questions }}</strong> questions correct
+                    in <strong>{{ time_taken }}</strong> minutes.
+                </p>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+                            <h5>{{ score }}%</h5>
+                            <small class="text-muted">Score</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                            <h5>{{ time_taken }}m</h5>
+                            <small class="text-muted">Time Taken</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <i class="fas fa-tachometer-alt fa-2x text-success mb-2"></i>
+                            <h5>{{ analysis.velocity }}</h5>
+                            <small class="text-muted">Velocity</small>
+                        </div>
+                    </div>
+                </div>
+
+                {% if analysis.performance_rating == 'excellent' %}
+                <div class="alert alert-success">
+                    <i class="fas fa-star me-2"></i>
+                    <strong>Excellent work!</strong> You've mastered this module. Ready to advance!
+                </div>
+                {% elif analysis.performance_rating == 'good' %}
+                <div class="alert alert-info">
+                    <i class="fas fa-thumbs-up me-2"></i>
+                    <strong>Good job!</strong> Keep practicing to improve further.
+                </div>
+                {% elif analysis.performance_rating == 'needs_practice' %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Needs practice.</strong> Review the material and try again.
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-book-reader me-2"></i>
+                    <strong>Needs improvement.</strong> We recommend reviewing this module.
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-center gap-2">
+                    {% if analysis.next_module %}
+                    <a href="{% url 'courses:module_detail' analysis.next_module.id %}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-2"></i>Next Module
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'courses:quiz_start' module.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-redo me-2"></i>Retry Quiz
+                    </a>
+                    <a href="{% url 'courses:course_detail' module.course.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>Course
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Analysis -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-brain text-primary me-2"></i>AI-Powered Analysis
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="mb-2"><i class="fas fa-chart-line text-primary me-2"></i>Current Level</h6>
+                        <p class="mb-0">
+                            <span class="badge badge-{{ analysis.current_level }} fs-6">
+                                {{ analysis.current_level|title }}
+                            </span>
+                            <span class="text-muted ms-2">Level Value: {{ analysis.level_value }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="mb-2"><i class="fas fa-tachometer-alt text-success me-2"></i>Learning Velocity</h6>
+                        <p class="mb-0">
+                            <strong>{{ analysis.velocity }}</strong>
+                            <small class="text-muted">accuracy/minute</small>
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h6 class="mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Adaptive Recommendation</h6>
+                <p class="mb-2">
+                    <strong>Action:</strong>
+                    {% if analysis.adaptive_action == 'ready_to_advance' %}
+                    <span class="badge bg-success">Ready to Advance</span>
+                <p class="mt-2">Your excellent performance shows you're ready for more challenging material!</p>
+                {% elif analysis.adaptive_action == 'consolidate_learning' %}
+                <span class="badge bg-info">Consolidate Learning</span>
+                <p class="mt-2">You're doing well! Continue practicing to strengthen your understanding.</p>
+                {% elif analysis.adaptive_action == 'review_recommended' %}
+                <span class="badge bg-warning">Review Recommended</span>
+                <p class="mt-2">Some topics need more practice. Review and try again.</p>
+                {% else %}
+                <span class="badge bg-danger">Remediation Required</span>
+                <p class="mt-2">We recommend reviewing the module content before attempting again.</p>
+                {% endif %}
+                </p>
+
+                {% if analysis.next_module %}
+                <div class="alert alert-success mt-3">
+                    <h6 class="mb-2"><i class="fas fa-arrow-right me-2"></i>Next Recommended Module</h6>
+                    <p class="mb-2">
+                        <strong>{{ analysis.next_module.title }}</strong>
+                        <span class="badge badge-{{ analysis.next_module.difficulty_level }} ms-2">
+                            {{ analysis.next_module.get_difficulty_level_display }}
+                        </span>
+                    </p>
+                    <p class="mb-0 text-muted">{{ analysis.next_module.description|truncatewords:20 }}</p>
+                    <a href="{% url 'courses:module_detail' analysis.next_module.id %}"
+                        class="btn btn-sm btn-success mt-2">
+                        Continue Learning
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Skill Gaps -->
+        {% if analysis.skill_gaps %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>Skill Gaps Detected
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Focus on improving these areas:</p>
+                {% for gap in analysis.skill_gaps %}
+                <div class="skill-gap-card">
+                    <h6 class="gap-title">{{ gap.skill_name }}</h6>
+                    <p class="gap-score">
+                        Current: <strong>{{ gap.current_score }}%</strong> | Target: 70%
+                    </p>
+                    <p class="mb-0">{{ gap.recommended_action }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Answer Review -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list-check text-primary me-2"></i>Answer Review
+            </div>
+            <div class="card-body">
+                {% for answer in answers %}
+                <div class="answer-item {% if answer.is_correct %}correct{% else %}incorrect{% endif %}">
+                    <span class="answer-badge badge {% if answer.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if answer.is_correct %}
+                        <i class="fas fa-check me-1"></i>Correct
+                        {% else %}
+                        <i class="fas fa-times me-1"></i>Incorrect
+                        {% endif %}
+                    </span>
+                    <p class="mb-1">
+                        <strong>Your Answer:</strong> {{ answer.user_answer }}
+                        {% if not answer.is_correct %}
+                        <span class="text-danger"> | Correct Answer: {{ answer.correct_answer }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie text-primary me-2"></i>Performance Summary
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-history text-primary me-2"></i>What's Next?
+            </div>
+            <div class="card-body">
+                {% if analysis.adaptive_action == 'ready_to_advance' %}
+                <p class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-2x mb-2"></i><br>
+                    You've mastered this module! Move on to the next challenge.
+                </p>
+                {% elif analysis.adaptive_action == 'consolidate_learning' %}
+                <p class="mb-3">
+                    <i class="fas fa-handshake text-info fa-2x mb-2"></i><br>
+                    Good progress! Continue to the next module to build on this foundation.
+                </p>
+                {% else %}
+                <p class="mb-3">
+                    <i class="fas fa-book-reader text-warning fa-2x mb-2"></i><br>
+                    Take some time to review the material. Practice makes perfect!
+                </p>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                    {% if analysis.next_module %}
+                    <a href="{% url 'courses:module_detail' analysis.next_module.id %}" class="btn btn-primary">
+                        Next Module
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'courses:dashboard' %}" class="btn btn-outline-secondary">
+                        Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="performanceChart"></canvas>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chartElement = document.getElementById('performanceChart');
+
+        if (chartElement) {
+            const ctx = chartElement.getContext('2d');
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Correct', 'Incorrect'],
+                    datasets: [{
+                        data: [
+                            {{ correct_count|default: "0"
+                    }},
+                            {{ incorrect_count|default: "0" }
+    }
+                        ],
+        backgroundColor: [
+        'rgba(16, 185, 129, 0.8)',
+        'rgba(239, 68, 68, 0.8)'
+    ],
+        borderWidth: 0
+                    }]
+                },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+            });
+        }
+
+        });
+    }
+});
+</script>
+
+{% endblock %}

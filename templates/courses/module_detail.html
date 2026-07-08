@@ -1,0 +1,174 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}{{ module.title }} - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' module.course.id %}">{{ module.course.title }}</a></li>
+                <li class="breadcrumb-item active">{{ module.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-cube text-primary me-2"></i>{{ module.title }}
+            </div>
+            <div class="card-body">
+                <h4 class="mb-3">{{ module.title }}</h4>
+                <p class="text-muted mb-4">{{ module.description }}</p>
+
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="stats-card">
+                            <div class="text-center">
+                                <i class="fas fa-layer-group fa-2x text-primary mb-2"></i>
+                                <h5 class="mb-0">{{ total_questions }}</h5>
+                                <small class="text-muted">Questions</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stats-card">
+                            <div class="text-center">
+                                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                <h5 class="mb-0">{{ module.estimated_minutes }}</h5>
+                                <small class="text-muted">Minutes</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stats-card">
+                            <div class="text-center">
+                                <i class="fas fa-signal fa-2x text-success mb-2"></i>
+                                <h5 class="mb-0">{{ module.get_difficulty_level_display }}</h5>
+                                <small class="text-muted">Difficulty</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if progress %}
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-chart-line me-2"></i>Your Progress</h6>
+                        <p class="mb-2">Best Score: <strong>{{ progress.score }}%</strong></p>
+                        <p class="mb-0">Attempts: <strong>{{ progress.attempts }}</strong> | Time Spent: <strong>{{ progress.time_spent_minutes }} min</strong></p>
+                    </div>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'courses:quiz_start' module.id %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play me-2"></i>
+                        {% if progress and progress.score > 0 %}
+                            Retry Quiz
+                        {% else %}
+                            Start Quiz
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'courses:course_detail' module.course.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Course
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Questions Preview -->
+        {% if questions_preview %}
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-eye text-primary me-2"></i>Sample Questions
+                </div>
+                <div class="card-body">
+                    {% for question in questions_preview %}
+                        <div class="quiz-question">
+                            <p class="question-text mb-3">
+                                <span class="badge bg-primary me-2">Q{{ forloop.counter }}</span>
+                                {{ question.question_text }}
+                            </p>
+                            <div class="quiz-options">
+                                <div class="quiz-option">
+                                    <span class="fw-bold">A)</span> {{ question.option_a }}
+                                </div>
+                                <div class="quiz-option">
+                                    <span class="fw-bold">B)</span> {{ question.option_b }}
+                                </div>
+                                {% if question.option_c %}
+                                    <div class="quiz-option">
+                                        <span class="fw-bold">C)</span> {{ question.option_c }}
+                                    </div>
+                                {% endif %}
+                                {% if question.option_d %}
+                                    <div class="quiz-option">
+                                        <span class="fw-bold">D)</span> {{ question.option_d }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <p class="text-muted text-center mt-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        These are sample questions. Start the quiz to see all {{ total_questions }} questions.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-info-circle text-primary me-2"></i>Module Info
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">Difficulty Level</h6>
+                <span class="badge badge-{{ module.difficulty_level }} fs-6">
+                    {{ module.get_difficulty_level_display }}
+                </span>
+
+                <hr>
+
+                <h6 class="mb-3">Prerequisites</h6>
+                {% if module.prerequisite_module %}
+                    <p class="text-muted">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        {{ module.prerequisite_module.title }}
+                    </p>
+                {% else %}
+                    <p class="text-muted">None</p>
+                {% endif %}
+
+                <hr>
+
+                <h6 class="mb-3">Topics Covered</h6>
+                {% for question in questions_preview %}
+                    {% for tag in question.get_tags_list %}
+                        <span class="badge bg-secondary me-1 mb-1">{{ tag }}</span>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if progress %}
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-history text-primary me-2"></i>Recent Attempts
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">View your detailed analytics on the dashboard.</p>
+                    <a href="{% url 'courses:analytics' %}" class="btn btn-outline-primary btn-sm w-100">
+                        View Analytics
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}{{ course.title }} - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+                <li class="breadcrumb-item active">{{ course.title }}</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1">
+            <i class="fas fa-book text-primary me-2"></i>{{ course.title }}
+        </h2>
+        <p class="text-muted mb-3">{{ course.description }}</p>
+    </div>
+</div>
+
+<!-- Learning Path -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-route text-primary me-2"></i>Learning Path
+            </div>
+            <div class="card-body">
+                <div class="learning-path-container">
+
+                    <!-- Beginner -->
+                    <div class="learning-path-level mb-4">
+                        <h5>
+                            <i class="fas fa-seedling text-success me-2"></i>BEGINNER
+                        </h5>
+
+                        <div class="learning-path-nodes">
+                            {% for module_with_status in modules_with_status %}
+                            {% if module_with_status.module.difficulty_level == 'beginner' %}
+                            {% if module_with_status.is_locked %}
+                            <div class="learning-path-node locked">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-beginner difficulty-badge">Beginner</span>
+                                <div class="progress-info">
+                                    <span class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Locked
+                                    </span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'courses:module_detail' module_with_status.module.id %}"
+                                class="learning-path-node {% if module_with_status.is_completed %}completed{% else %}in-progress{% endif %}">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-beginner difficulty-badge">Beginner</span>
+                                <div class="progress-info">
+                                    {% if module_with_status.is_completed %}
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Completed - {{ module_with_status.score }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-primary">
+                                        <i class="fas fa-play-circle me-1"></i>
+                                        In Progress
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Intermediate -->
+                    <div class="learning-path-level mb-4">
+                        <h5>
+                            <i class="fas fa-chart-line text-warning me-2"></i>INTERMEDIATE
+                        </h5>
+
+                        <div class="learning-path-nodes">
+                            {% for module_with_status in modules_with_status %}
+                            {% if module_with_status.module.difficulty_level == 'intermediate' %}
+                            {% if module_with_status.is_locked %}
+                            <div class="learning-path-node locked">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-intermediate difficulty-badge">Intermediate</span>
+                                <div class="progress-info">
+                                    <span class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Locked
+                                    </span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'courses:module_detail' module_with_status.module.id %}"
+                                class="learning-path-node {% if module_with_status.is_completed %}completed{% else %}in-progress{% endif %}">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-intermediate difficulty-badge">Intermediate</span>
+                                <div class="progress-info">
+                                    {% if module_with_status.is_completed %}
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Completed - {{ module_with_status.score }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-primary">
+                                        <i class="fas fa-play-circle me-1"></i>
+                                        In Progress
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Advanced -->
+                    <div class="learning-path-level">
+                        <h5>
+                            <i class="fas fa-rocket text-danger me-2"></i>ADVANCED
+                        </h5>
+
+                        <div class="learning-path-nodes">
+                            {% for module_with_status in modules_with_status %}
+                            {% if module_with_status.module.difficulty_level == 'advanced' %}
+                            {% if module_with_status.is_locked %}
+                            <div class="learning-path-node locked">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-advanced difficulty-badge">Advanced</span>
+                                <div class="progress-info">
+                                    <span class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Locked
+                                    </span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'courses:module_detail' module_with_status.module.id %}"
+                                class="learning-path-node {% if module_with_status.is_completed %}completed{% else %}in-progress{% endif %}">
+                                <h6>{{ module_with_status.module.title }}</h6>
+                                <span class="badge badge-advanced difficulty-badge">Advanced</span>
+                                <div class="progress-info">
+                                    {% if module_with_status.is_completed %}
+                                    <span class="text-success">
+                                        <i class="fas fa-check-circle me-1"></i>
+                                        Completed - {{ module_with_status.score }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-primary">
+                                        <i class="fas fa-play-circle me-1"></i>
+                                        In Progress
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Module List View -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list text-primary me-2"></i>All Modules
+            </div>
+            <div class="card-body">
+                {% for module_with_status in modules_with_status %}
+                <div class="module-list-item">
+                    <div class="module-number">{{ forloop.counter }}</div>
+                    <div class="module-info">
+                        <h5 class="mb-1">{{ module_with_status.module.title }}</h5>
+                        <p class="text-muted mb-2">{{ module_with_status.module.description|truncatewords:20 }}</p>
+                        <div>
+                            <span class="badge badge-{{ module_with_status.module.difficulty_level }}">
+                                {{ module_with_status.module.get_difficulty_level_display }}
+                            </span>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-question-circle me-1"></i>{{ module_with_status.module.questions.count
+                                }} Questions
+                            </span>
+                            <span class="badge bg-info">
+                                <i class="fas fa-clock me-1"></i>{{ module_with_status.module.estimated_minutes }} min
+                            </span>
+                        </div>
+                    </div>
+                    <div class="module-actions">
+                        {% if module_with_status.is_completed %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>{{ module_with_status.score }}%
+                        </span>
+                        <a href="{% url 'courses:quiz_start' module_with_status.module.id %}"
+                            class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-redo me-1"></i>Retry
+                        </a>
+                        {% elif module_with_status.is_locked %}
+                        <span class="text-muted">
+                            <i class="fas fa-lock me-2"></i>Locked
+                        </span>
+                        {% else %}
+                        <a href="{% url 'courses:module_detail' module_with_status.module.id %}"
+                            class="btn btn-primary">
+                            {% if module_with_status.score > 0 %}
+                            <i class="fas fa-play me-1"></i>Continue
+                            {% else %}
+                            <i class="fas fa-play me-1"></i>Start
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

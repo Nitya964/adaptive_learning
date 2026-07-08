@@ -1,0 +1,74 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Courses - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Courses</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1">
+            <i class="fas fa-book text-primary me-2"></i>Available Courses
+        </h2>
+        <p class="text-muted">Explore our AI-powered adaptive courses</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for course in courses %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card course-card h-100">
+                {% if course.image_url %}
+                    <img src="{{ course.image_url }}" class="course-image" alt="{{ course.title }}">
+                {% else %}
+                    <div class="course-image d-flex align-items-center justify-content-center bg-primary">
+                        <i class="fas fa-book fa-4x text-white"></i>
+                    </div>
+                {% endif %}
+
+                <div class="course-content">
+                    <h5 class="course-title">{{ course.title }}</h5>
+                    <p class="course-description">{{ course.description }}</p>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Your Progress</small>
+                            <small class="text-muted">{{ course.progress_percentage }}%</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ course.progress_percentage }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-cubes me-1"></i>{{ course.modules.count }} Modules
+                        </span>
+                        <a href="{% url 'courses:course_detail' course.id %}" class="btn btn-primary">
+                            {% if course.progress_percentage > 0 %}
+                                Continue
+                            {% else %}
+                                Start
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <h4>No Courses Available</h4>
+                    <p class="text-muted">Check back later for new courses!</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

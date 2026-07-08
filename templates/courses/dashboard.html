@@ -1,0 +1,388 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Dashboard - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-1">
+            <i class="fas fa-home text-primary me-2"></i>Welcome back, {{ user.username }}!
+        </h2>
+        <p class="text-muted">Your personalized learning journey powered by AI</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon blue">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h3>{{ knowledge_map.completed_count }}/{{ knowledge_map.total_modules }}</h3>
+                    <p>Modules Completed</p>
+                </div>
+            </div>
+            <div class="progress">
+                div class="progress-bar bg-primary"
+                role="progressbar"
+                style="width: {{ knowledge_map.overall_progress|default:0 }}%">
+            </div>
+            <small class="text-muted mt-2 d-block">{{ knowledge_map.overall_progress }}% Complete</small>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon green">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div>
+                    <h3>{{ skill_data.average_score }}%</h3>
+                    <p>Average Score</p>
+                </div>
+            </div>
+            <small class="text-muted">
+                <i class="fas fa-chart-line me-1"></i>
+                Across {{ skill_data.total_quizzes }} quizzes
+            </small>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <h3>{{ productivity.total_time_hours }}h</h3>
+                    <p>Time Invested</p>
+                </div>
+            </div>
+            <small class="text-muted">
+                <i class="fas fa-calendar-week me-1"></i>
+                Last 7 days
+            </small>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon purple">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h3>{{ remediation|length }}</h3>
+                    <p>Skill Gaps</p>
+                </div>
+            </div>
+            <small class="text-muted">
+                <i class="fas fa-lightbulb me-1"></i>
+                Areas to improve
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <!-- Left Column - Skill Radar & Learning Path -->
+    <div class="col-lg-6 mb-4">
+        <!-- Skill Mastery Radar Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-chart-radar text-primary me-2"></i>Skill Mastery Analysis
+            </div>
+            <div class="card-body">
+                {% if skill_data.skills %}
+                <canvas id="skillRadarChart" style="max-height: 350px;"></canvas>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-chart-radar fa-3x mb-3"></i>
+                    <p>Complete a quiz to see your skill analysis</p>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-primary">
+                        Start Learning
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Learning Path Preview -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-route text-primary me-2"></i>Your Learning Path
+                </span>
+                <a href="{% url 'courses:learning_path' %}" class="btn btn-sm btn-outline-primary">
+                    View Full Path
+                </a>
+            </div>
+            <div class="card-body">
+                {% if knowledge_map.completed_modules or knowledge_map.current_modules %}
+                <div class="learning-path-container">
+                    {% if knowledge_map.completed_modules %}
+                    <div class="learning-path-level">
+                        <h5><i class="fas fa-check-circle text-success me-2"></i>Completed</h5>
+                        <div class="learning-path-nodes">
+                            {% for module in knowledge_map.completed_modules|slice:":3" %}
+                            <div class="learning-path-node completed">
+                                <h6>{{ module.title }}</h6>
+                                <span class="badge badge-beginner difficulty-badge">
+                                    {{ module.get_difficulty_level_display }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if knowledge_map.current_modules %}
+                    <div class="learning-path-level">
+                        <h5><i class="fas fa-spinner text-primary me-2"></i>In Progress</h5>
+                        <div class="learning-path-nodes">
+                            {% for module in knowledge_map.current_modules|slice:":2" %}
+                            <div class="learning-path-node in-progress">
+                                <h6>{{ module.title }}</h6>
+                                <span class="badge badge-beginner difficulty-badge">
+                                    {{ module.get_difficulty_level_display }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if knowledge_map.available_modules %}
+                    <div class="learning-path-level">
+                        <h5><i class="fas fa-unlock text-info me-2"></i>Available Next</h5>
+                        <div class="learning-path-nodes">
+                            {% for module in knowledge_map.available_modules|slice:":2" %}
+                            <div class="learning-path-node">
+                                <h6>{{ module.title }}</h6>
+                                <span class="badge badge-beginner difficulty-badge">
+                                    {{ module.get_difficulty_level_display }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-route fa-3x mb-3"></i>
+                    <p>Start a course to build your learning path</p>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-primary">
+                        Browse Courses
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Remediation & Recent Activity -->
+    <div class="col-lg-6 mb-4">
+        <!-- Remediation Suggestions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-lightbulb text-warning me-2"></i>Personalized Recommendations
+            </div>
+            <div class="card-body">
+                {% if remediation %}
+                {% for gap in remediation|slice:":3" %}
+                <div class="remediation-card">
+                    <div class="d-flex align-items-start">
+                        <div class="remediation-icon me-3">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ gap.skill }}</h6>
+                            <p class="text-muted mb-2">
+                                Current: {{ gap.current_score }}% → Target: {{ gap.target_score }}%
+                            </p>
+                            <p class="mb-2">{{ gap.recommended_action }}</p>
+                            {% if gap.recommended_modules %}
+                            <small class="text-muted">
+                                <i class="fas fa-book me-1"></i>
+                                Recommended modules available
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if remediation|length > 3 %}
+                <a href="{% url 'courses:analytics' %}" class="btn btn-sm btn-outline-warning w-100">
+                    View All {{ remediation|length }} Recommendations
+                </a>
+                {% endif %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                    <p>No skill gaps detected!</p>
+                    <small>You're doing great. Keep learning!</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Quiz Attempts -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-history text-primary me-2"></i>Recent Activity
+                </span>
+                <a href="{% url 'courses:analytics' %}" class="btn btn-sm btn-outline-primary">
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_attempts %}
+                <div class="list-group list-group-flush">
+                    {% for attempt in recent_attempts %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ attempt.module.title }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ attempt.attempted_at|date:"M d, Y" }}
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-clock me-1"></i>{{ attempt.time_taken_minutes }} min
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span
+                                    class="badge {% if attempt.score_percentage >= 70 %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                                    {{ attempt.score_percentage }}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                    <p>No quiz attempts yet</p>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-primary">
+                        Take Your First Quiz
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Courses -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book text-primary me-2"></i>Available Courses
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for course in courses|slice:":3" %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card course-card h-100">
+                            {% if course.image_url %}
+                            <img src="{{ course.image_url }}" class="course-image" alt="{{ course.title }}">
+                            {% else %}
+                            <div class="course-image d-flex align-items-center justify-content-center bg-primary">
+                                <i class="fas fa-book fa-3x text-white"></i>
+                            </div>
+                            {% endif %}
+                            <div class="course-content">
+                                <h5 class="course-title">{{ course.title }}</h5>
+                                <p class="course-description">{{ course.description|truncatewords:15 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">{{ course.modules.count }} Modules</span>
+                                    <a href="{% url 'courses:course_detail' course.id %}"
+                                        class="btn btn-primary btn-sm">
+                                        Continue
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if courses|length > 3 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-outline-primary">
+                        View All Courses
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    {% if skill_data.skills %}
+    const ctx = document.getElementById('skillRadarChart').getContext('2d');
+    const skillLabels = {{ skill_data.skills| safe }};
+    const skillDataValues = Object.values(skillLabels);
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: Object.keys(skillLabels),
+            datasets: [{
+                label: 'Skill Mastery',
+                data: skillDataValues,
+                backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(37, 99, 235, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20,
+                        backdropColor: 'transparent'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    angleLines: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 12,
+                            weight: '500'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

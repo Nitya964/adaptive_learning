@@ -1,0 +1,178 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Quiz - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Courses</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' module.course.id %}">{{ module.course.title }}</a></li>
+                <li class="breadcrumb-item active">Quiz</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-question-circle text-primary me-2"></i>{{ module.title }} - Quiz
+                </span>
+                <span class="badge bg-primary">{{ current_level|title }} Level</span>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'courses:quiz_submit' module.id %}">
+                    {% csrf_token %}
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong> Answer all questions carefully. Your performance will determine the difficulty of future questions.
+                    </div>
+
+                    {% for question in questions %}
+                        div class="quiz-question fade-in" style="animation-delay:{{forloop.counter}}.1s;"></div>"
+                            <p class="question-text">
+                                <span class="badge bg-primary me-2">Question {{ forloop.counter }}</span>
+                                {{ question.question_text }}
+                            </p>
+
+                            <div class="quiz-options">
+                                <label class="quiz-option">
+                                    <input type="radio" name="question_{{ question.id }}" value="A" required>
+                                    <span class="fw-bold me-2">A)</span>{{ question.option_a }}
+                                </label>
+
+                                <label class="quiz-option">
+                                    <input type="radio" name="question_{{ question.id }}" value="B">
+                                    <span class="fw-bold me-2">B)</span>{{ question.option_b }}
+                                </label>
+
+                                {% if question.option_c %}
+                                    <label class="quiz-option">
+                                        <input type="radio" name="question_{{ question.id }}" value="C">
+                                        <span class="fw-bold me-2">C)</span>{{ question.option_c }}
+                                    </label>
+                                {% endif %}
+
+                                {% if question.option_d %}
+                                    <label class="quiz-option">
+                                        <input type="radio" name="question_{{ question.id }}" value="D">
+                                        <span class="fw-bold me-2">D)</span>{{ question.option_d }}
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+                        </button>
+                        <a href="{% url 'courses:module_detail' module.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-clock text-primary me-2"></i>Timer
+            </div>
+            <div class="card-body">
+                <div class="quiz-timer">
+                    <div class="timer-display" id="timer">00:00</div>
+                    <p class="text-muted mt-2">
+                        <i class="fas fa-hourglass-half me-1"></i>Time Elapsed
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-info-circle text-primary me-2"></i>Quiz Info
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-question-circle text-primary me-2"></i>
+                        <strong>{{ total_questions }}</strong> Questions
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-layer-group text-success me-2"></i>
+                        <strong>{{ current_level|title }}</strong> Difficulty
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>{{ module.estimated_minutes }}</strong> min estimated
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-lightbulb text-warning me-2"></i>Tips
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Read each question carefully</li>
+                    <li>Choose the best answer</li>
+                    <li>Your performance adapts future questions</li>
+                    <li>Take your time, accuracy matters</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Timer functionality
+    let seconds = 0;
+    let timerInterval;
+
+    function updateTimer() {
+        seconds++;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+
+        document.getElementById('timer').textContent =
+            String(minutes).padStart(2, '0') + ':' + String(remainingSeconds).padStart(2, '0');
+    }
+
+    timerInterval = setInterval(updateTimer, 1000);
+
+    // Warn before leaving page
+    window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = '';
+    });
+
+    // Style selected options
+    document.querySelectorAll('.quiz-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Remove selection from siblings
+            const name = this.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(sibling => {
+                sibling.closest('.quiz-option').style.background = '';
+                sibling.closest('.quiz-option').style.borderColor = '';
+            });
+
+            // Add selection to current
+            this.closest('.quiz-option').style.background = '#eff6ff';
+            this.closest('.quiz-option').style.borderColor = '#3b82f6';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Analytics - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Analytics</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1">
+            <i class="fas fa-chart-bar text-primary me-2"></i>Learning Analytics
+        </h2>
+        <p class="text-muted">Track your progress and performance over time</p>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon blue">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <h3>{{ total_quizzes }}</h3>
+                    <p>Total Quizzes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon green">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div>
+                    <h3>{{ average_score }}%</h3>
+                    <p>Average Score</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <h3>{{ total_time_hours }}h</h3>
+                    <p>Total Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="icon-wrapper">
+                <div class="icon red">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h3>{{ skill_gaps|length }}</h3>
+                    <p>Skill Gaps</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-chart-radar text-primary me-2"></i>Skill Mastery
+            </div>
+            <div class="card-body">
+                {% if skill_data.skills %}
+                    <canvas id="skillRadarChart" style="max-height: 350px;"></canvas>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-chart-radar fa-3x mb-3"></i>
+                        <p>Complete a quiz to see your skill analysis</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-chart-line text-primary me-2"></i>Productivity Trends (30 Days)
+            </div>
+            <div class="card-body">
+                {% if productivity.total_quizzes > 0 %}
+                    <canvas id="productivityChart" style="max-height: 350px;"></canvas>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                        <p>No activity in the last 30 days</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Skill Gaps -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>Skill Gaps - Areas for Improvement
+            </div>
+            <div class="card-body">
+                {% if skill_gaps %}
+                    <div class="row">
+                        {% for gap in skill_gaps %}
+                            <div class="col-md-6 mb-3">
+                                <div class="skill-gap-card">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">{{ gap.skill_name }}</h6>
+                                        <span class="badge bg-danger">{{ gap.current_score }}%</span>
+                                    </div>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-book me-1"></i>{{ gap.module.title }}
+                                    </p>
+                                    <p class="mb-0">{{ gap.recommended_action }}</p>
+                                    <a href="{% url 'courses:module_detail' gap.module.id %}" class="btn btn-sm btn-outline-warning mt-2">
+                                        Review Module
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                        <p>No skill gaps detected! You're doing great!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Quiz History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history text-primary me-2"></i>Quiz History
+            </div>
+            <div class="card-body">
+                {% if all_attempts %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Module</th>
+                                    <th>Difficulty</th>
+                                    <th>Score</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in all_attempts %}
+                                    <tr>
+                                        <td>{{ attempt.attempted_at|date:"M d, Y H:i" }}</td>
+                                        <td>{{ attempt.module.title }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ attempt.adaptive_level }}">
+                                                {{ attempt.adaptive_level|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if attempt.score_percentage >= 70 %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ attempt.score_percentage }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ attempt.time_taken_minutes }} min</td>
+                                        <td>
+                                            {% if attempt.score_percentage >= 70 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-check-circle"></i> Passed
+                                                </span>
+                                            {% else %}
+                                                <span class="text-danger">
+                                                    <i class="fas fa-times-circle"></i> Needs Work
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                        <p>No quiz attempts yet. Start learning to see your history!</p>
+                        <a href="{% url 'courses:course_list' %}" class="btn btn-primary">
+                            Start Learning
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Skill Mastery Radar Chart
+    {% if skill_data.skills %}
+        const skillCtx = document.getElementById('skillRadarChart').getContext('2d');
+        const skillLabels = {{ skill_data.skills|safe }};
+        new Chart(skillCtx, {
+            type: 'radar',
+            data: {
+                labels: Object.keys(skillLabels),
+                datasets: [{
+                    label: 'Skill Mastery',
+                    data: Object.values(skillLabels),
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                    pointBorderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { stepSize: 20 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    {% endif %}
+
+    // Productivity Line Chart
+    {% if productivity.total_quizzes > 0 %}
+        const prodCtx = document.getElementById('productivityChart').getContext('2d');
+        const prodData = {{ productivity.daily_data|safe }};
+        new Chart(prodCtx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(prodData),
+                datasets: [{
+                    label: 'Average Score',
+                    data: Object.values(prodData).map(d => d.average_score),
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    {% endif %}
+</script>
+{% endblock %}

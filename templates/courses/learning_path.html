@@ -1,0 +1,191 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Learning Path - Adaptive Learning Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'courses:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Learning Path</li>
+            </ol>
+        </nav>
+        <h2 class="mb-1">
+            <i class="fas fa-route text-primary me-2"></i>Your Learning Path
+        </h2>
+        <p class="text-muted">Visualize your learning journey and track progress</p>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Overall Progress</h5>
+                        <p class="text-muted mb-0">{{ knowledge_map.completed_count }} of {{ knowledge_map.total_modules }} modules completed</p>
+                    </div>
+                    <div class="text-end">
+                        <h2 class="mb-0">{{ knowledge_map.overall_progress }}%</h2>
+                    </div>
+                </div>
+                <div class="progress mt-3" style="height: 20px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ knowledge_map.overall_progress }}%">
+                        {{ knowledge_map.overall_progress }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Completed Modules -->
+{% if knowledge_map.completed_modules %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>Completed Modules ({{ knowledge_map.completed_modules|length }})
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for module in knowledge_map.completed_modules %}
+                            <div class="col-md-4 mb-3">
+                                <div class="learning-path-node completed">
+                                    <h6>{{ module.title }}</h6>
+                                    <span class="badge badge-beginner difficulty-badge">
+                                        {{ module.get_difficulty_level_display }}
+                                    </span>
+                                    <div class="progress-info mt-2">
+                                        <i class="fas fa-check-circle text-success"></i> Completed
+                                    </div>
+                                    <small class="text-muted d-block mt-1">{{ module.course.title }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- In Progress Modules -->
+{% if knowledge_map.current_modules %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-spinner me-2"></i>In Progress ({{ knowledge_map.current_modules|length }})
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for module in knowledge_map.current_modules %}
+                            <div class="col-md-4 mb-3">
+                                <div class="learning-path-node in-progress" onclick="window.location.href='{% url 'courses:module_detail' module.id %}'">
+                                    <h6>{{ module.title }}</h6>
+                                    <span class="badge badge-beginner difficulty-badge">
+                                        {{ module.get_difficulty_level_display }}
+                                    </span>
+                                    <div class="progress-info mt-2">
+                                        <i class="fas fa-play-circle text-primary"></i> Continue Learning
+                                    </div>
+                                    <small class="text-muted d-block mt-1">{{ module.course.title }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Available Modules -->
+{% if knowledge_map.available_modules %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-unlock me-2"></i>Available to Start ({{ knowledge_map.available_modules|length }})
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for module in knowledge_map.available_modules %}
+                            <div class="col-md-4 mb-3">
+                                <div class="learning-path-node" onclick="window.location.href='{% url 'courses:module_detail' module.id %}'">
+                                    <h6>{{ module.title }}</h6>
+                                    <span class="badge badge-beginner difficulty-badge">
+                                        {{ module.get_difficulty_level_display }}
+                                    </span>
+                                    <div class="progress-info mt-2">
+                                        <i class="fas fa-play text-info"></i> Ready to Start
+                                    </div>
+                                    <small class="text-muted d-block mt-1">{{ module.course.title }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Locked Modules -->
+{% if knowledge_map.locked_modules %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-lock me-2"></i>Locked Modules ({{ knowledge_map.locked_modules|length }})
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for module in knowledge_map.locked_modules %}
+                            <div class="col-md-4 mb-3">
+                                <div class="learning-path-node locked">
+                                    <h6>{{ module.title }}</h6>
+                                    <span class="badge badge-beginner difficulty-badge">
+                                        {{ module.get_difficulty_level_display }}
+                                    </span>
+                                    <div class="progress-info mt-2">
+                                        <i class="fas fa-lock text-muted"></i> Complete prerequisites first
+                                    </div>
+                                    <small class="text-muted d-block mt-1">{{ module.course.title }}</small>
+                                    {% if module.prerequisite_module %}
+                                        <small class="text-warning d-block mt-1">
+                                            Requires: {{ module.prerequisite_module.title }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Empty State -->
+{% if not knowledge_map.completed_modules and not knowledge_map.current_modules and not knowledge_map.available_modules and not knowledge_map.locked_modules %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-route fa-4x text-muted mb-3"></i>
+                    <h4>No Learning Path Yet</h4>
+                    <p class="text-muted">Start a course to build your personalized learning path!</p>
+                    <a href="{% url 'courses:course_list' %}" class="btn btn-primary">
+                        Browse Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
