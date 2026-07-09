@@ -23,3 +23,26 @@ BCA Final Year Major Project
 
 ## Author
 Nitya Naik
+
+## Project Screenshots
+
+### Login Page
+![Login](1.jpeg)
+
+### Dashboard
+![Dashboard](2.jpeg)
+
+### Course List
+![Course List](3.jpeg)
+
+### Quiz Page
+![Quiz](4.jpeg)
+
+### Result Page
+![Result](5.jpeg)
+
+### Learning Path
+![Learning](6.jpeg)
+
+### Analytics
+![Analytics](5.jpeg)
